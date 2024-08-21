@@ -21,8 +21,7 @@ RUN apt-get install -y yarn
 ENV ENV_TYPE staging
 ENV MONGO_HOST mongo
 ENV MONGO_PORT 27017
-# Make node use the legacy ssl provider
-ENV NODE_OPTIONS=--openssl-legacy-provider
+
 ##########
 
 ENV PYTHONPATH=$PYTHONPATH:/src/
