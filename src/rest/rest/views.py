@@ -23,6 +23,8 @@ class TodoListView(APIView):
         try:
             # Insert the new TODO item into the MongoDB collection
             todo_item = request.data
+            print(request.data)
+            print(todo_item)
             collection.insert_one(todo_item)
             return Response({"message": "TODO item added successfully"}, status=status.HTTP_201_CREATED)
         except Exception as e:
