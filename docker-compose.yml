@@ -18,6 +18,8 @@ services:
     platform: linux/amd64
     container_name: app
     command: bash -c "cd /src/app && yarn add memory-fs --dev && yarn install && yarn start"
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8000
     ports:
       - "3000:3000"
     volumes:

@@ -1,26 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-export function App() {
-    const [todos, setTodos] = useState([]);
+function TodoItem({ todo }) {
+    return <li>{todo.title}</li>;
+}
+
+function TodoForm({ onAddTodo }) {
     const [newTodo, setNewTodo] = useState('');
 
-    // Fetch TODOs from the backend when the component mounts
-    useEffect(() => {
-        fetch('http://localhost:8000/todos/')
-            .then(response => response.json())
-            .then(data => setTodos(data))
-            .catch(error => console.error('Error fetching TODOs:', error));
-    }, []);
-
-    // Handle form submission to create a new TODO
     const handleSubmit = (event) => {
-        event.preventDefault();  // Prevent page reload
+        event.preventDefault();
         if (!newTodo.trim()) return;
 
-        const todoItem = { title: newTodo };
+        onAddTodo(newTodo);
+        setNewTodo(''); // Clear the input field
+    };
 
-        fetch('http://localhost:8000/todos/', {
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <div>
+                <label htmlFor="todo">ToDo: </label>
+                <input
+                    type="text"
+                    id="todo"
+                    value={newTodo}
+                    onChange={(event) => setNewTodo(event.target.value)}
+                />
+            </div>
+            <div style={{ marginTop: "5px" }}>
+                <button type="submit">Add ToDo!</button>
+            </div>
+        </form>
+    );
+}
+
+export function App() {
+    const [todos, setTodos] = useState([]);
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
+    const fetchTodos = () => {
+        fetch(`${backendUrl}/todos/`)
+            .then(response => response.json())
+            .then(data => {
+                setTodos(data);
+            })
+            .catch(error => console.error('Error fetching TODOs:', error));
+    };
+
+    useEffect(() => {
+        fetchTodos();
+    }, []);
+
+    const addTodo = (title) => {
+        const todoItem = { title };
+
+        fetch(`${backendUrl}/todos/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -29,16 +64,10 @@ export function App() {
         })
             .then(response => response.json())
             .then(data => {
-                // Refresh the TODO list after adding a new TODO
-                setTodos([...todos, todoItem]);
-                setNewTodo('');  // Clear the input field
+                // After successfully adding the todo, fetch all todos
+                fetchTodos();
             })
             .catch(error => console.error('Error adding TODO:', error));
-    };
-
-    // Handle input change
-    const handleInputChange = (event) => {
-        setNewTodo(event.target.value);
     };
 
     return (
@@ -47,26 +76,13 @@ export function App() {
                 <h1>List of TODOs</h1>
                 <ul>
                     {todos.map((todo, index) => (
-                        <li key={index}>{todo.title}</li>
+                        <TodoItem key={index} todo={todo} />
                     ))}
                 </ul>
             </div>
             <div>
                 <h1>Create a ToDo</h1>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="todo">ToDo: </label>
-                        <input
-                            type="text"
-                            id="todo"
-                            value={newTodo}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div style={{"marginTop": "5px"}}>
-                        <button type="submit">Add ToDo!</button>
-                    </div>
-                </form>
+                <TodoForm onAddTodo={addTodo} />
             </div>
         </div>
     );
